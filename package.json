@@ -1,0 +1,32 @@
+{
+  "name": "doitlive",
+  "version": "0.0.0",
+  "description": "Templating system for live DOM manipulation",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "grunt test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/zkat/doitlive.git"
+  },
+  "keywords": [
+    "template",
+    "dom",
+    "livebinding"
+  ],
+  "author": "Kat Marchán <kzm@sykosomatic.org>",
+  "license": "CC0",
+  "bugs": {
+    "url": "https://github.com/zkat/doitlive/issues"
+  },
+  "devDependencies": {
+    "jsdoc": "~3.3.0-alpha3",
+    "uglify-js": "~2.4.8",
+    "grunt-cli": "~0.1.11",
+    "mocha": "~1.17.0",
+    "jshint": "~2.4.1",
+    "bower": "~1.2.8",
+    "browserify": "~3.19.1"
+  }
+}
