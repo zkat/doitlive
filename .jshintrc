@@ -1,0 +1,38 @@
+{
+    // Limit lines to this many characters
+    "maxlen": 80,
+    // Indentation level
+    "indent": 2,
+    // No type coercion comparisons...
+    "eqeqeq": true,
+    // ...unless it's == null
+    "eqnull": true,
+    // require {} after if/else/for/when
+    "curly": true,
+    // Require () around IIFEs
+    "immed": true,
+    // allow something && something()
+    "expr": true,
+    // require functions used with new to be capitalized
+    "newcap": true,
+    // prohibit undeclared variables
+    "undef": true,
+    // prohibit unused variables
+    "unused": true,
+    // Enforce quotation mark consistency
+    "quotmark": true,
+    // for in loops must filter with hasOwnProperty
+    "forin": true,
+    // Both x["foo"] and x.foo are acceptable
+    "sub": true,
+    // Disallow trailing whitespace
+    "trailing": true,
+    // Enforce camelCasing
+    "camelcase": true,
+    // Maximum nesting depth
+    "maxdepth": 4,
+    // Browserify is node-like
+    "node": true,
+    // assume we're running in a browser
+    "browser": true
+} 
