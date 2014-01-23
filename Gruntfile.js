@@ -1,8 +1,9 @@
 module.exports = function(grunt) {
   grunt.loadNpmTasks("grunt-contrib-jshint");
   grunt.loadNpmTasks("grunt-contrib-clean");
+  grunt.loadNpmTasks("grunt-contrib-connect");
   grunt.loadNpmTasks("grunt-browserify");
-  grunt.loadNpmTasks("grunt-mocha-test");
+  grunt.loadTasks("tasks");
 
   grunt.initConfig({
     pkg: grunt.file.readJSON("package.json"),
@@ -12,13 +13,23 @@ module.exports = function(grunt) {
     clean: ["<%= buildDir %>"],
 
     browserify: {
+      test: {
+        files: {
+          "<%= buildDir %>/test.js": ["test/test.js"]
+        },
+        options: {
+          debug: true,
+          standalone: "doitlive-test"
+        }
+      },
       dist: {
         files: {
-          '<%= buildDir %>/doitlive.js': ['src/index.js']
+          "<%= buildDir %>/doitlive.js": ["src/index.js"]
         },
         options: {
           transform: [],
-          debug: true
+          debug: true,
+          standalone: "doitlive"
         }
       }
     },
@@ -30,20 +41,32 @@ module.exports = function(grunt) {
       files: ["src/**/*.js"]
     },
 
-    mochaTest: {
+    connect: {
       test: {
         options: {
-          reporter: "spec"
-        },
-        src: ["src/**/*test.js"]
+          port: 8889,
+          base: ".",
+          directory: "./"
+        }
+      }
+    },
+
+    testee: {
+      local: {
+        options: {
+          urls: ["http://localhost:8889/test/test.html"],
+          browsers: ["phantom"]
+        }
       }
     }
   });
 
+  grunt.registerTask("test", ["browserify:test", "connect:test", "testee:local"]);
+
   grunt.registerTask("default", [
     "clean",
     "jshint",
-    "mochaTest",
+    "test",
     "browserify:dist"
   ]);
 };
