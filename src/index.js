@@ -1,62 +1,35 @@
 "use strict";
 
 var _ = require("lodash"),
-    $ = require("jquery"),
+    $ = require("../bower_components/jquery/jquery.js"),
     helpers = require("./helpers");
 
-// var exampleData = {
-//   title: "Hello, world!",
-//   post: "This is a post. Hi there!",
-//   comments: [{
-//     name: "Jane",
-//     text: "I enjoy this post."
-//   },{
-//     name: "John",
-//     text: "omg me too!"
-//   }]
-// };
+var sortAttributes = makeAttributeSorter();
 
-// // Mappings can be defined in javascript...
-// var exampleMapping = {
-//   "h1": "title",
-//   "p": "post",
-//   "ol": helpers.each("comments", {
-//     "li": {
-//       ".name": "name",
-//       ".text": "text"
-//     }
-//   })
-// };
+/*
+ * The order of Node.attributes isn't specified in the html spec, so we detect
+ * it on a per-browser basis and hope they're at least not jumbled. Chrome, for
+ * example, keeps them in order, whereas Firefox reverses their order.
+ */
+function makeAttributeSorter() {
+  var div = document.createElement("div");
+  div.innerHTML = "<div foo bar baz></div>";
+  var attributesInOrder = !_.isEqual(div.children[0].attributes,
+                                     ["foo", "bar", "baz"]);
+  return _.constant(attributesInOrder ? 0 : 1);
+}
 
-// // ...or directly in the html, where each dil-* refers to a value in the
-// // passed-in helper object (TODO), which should be a function with type key
-// // -> mapping -> domUpdate
-
-// // TODO - what to do about <script> elements? If you put one in your
-// // template, it will execute at least once even if the parent is going to
-// // remove it.
-// var exampleHtml = ''+
-//       '<h1 dil-text=title></h1>'+
-//       '<p dil-text=post></p>'+
-//       '<ol dil-each=comments>'+
-//       '  <li class=comment>'+
-//       '    <span dil-text=dil-each-index></span>'+
-//       // If you don't want to insert an html element, use a fragment
-//       // custom tag from can.Component or similar. Note that it'll need
-//       // to be cloneable?
-//       '    <h4>@<fragment dil-text=name></fragment></h4>'+
-//       '    <p dil-text=text></p>'+
-//       // Hooray no </li>! Perfectly legal! Renders according to browser.
-//       '</ol>'+
-//       '';
-
-// Pretend-Python
-function render(html, mapping, data) {
-  var frag = document.createDocumentFragment();
-  $(frag).html(html);
-  _.forEach(flatMapping(expandMapping(mapping)), function(handler, selector) {
-    handler(selector, data);
-  });
+function compile(html, mapping) {
+  var tmplDom = $(html);
+  mapping = flattenMapping(expandMapping(mapping));
+  return function(data) {
+    var frag = document.createDocumentFragment(),
+        div = $("div");
+    div.append(tmplDom.clone());
+    applyMapping(div, data, mapping);
+    frag.append(div.children());
+    return frag;
+  };
 }
 
 function expandMapping(mapping) {
@@ -67,15 +40,14 @@ function expandMapping(mapping) {
     case "object":
       return expandMapping(val);
     default:
-      return helpers.text(val);
+      throw new Error("Unexpected value mapping");
     }
   });
 }
-
-function flatMapping(mapping) {
+function flattenMapping(mapping) {
   return _.reduce(mapping, function(acc, val, key) {
     if (typeof val === "object") {
-      _.forEach(flatMapping(val), function(subVal, subKey) {
+      _.forEach(flattenMapping(val), function(subVal, subKey) {
         acc[key + " " + subKey] = subVal;
       });
     } else {
@@ -85,6 +57,51 @@ function flatMapping(mapping) {
   }, {});
 }
 
+function applyMapping(el, data, mapping) {
+  _.forEach(mapping, function(handler, selector) {
+    handler(el.find(selector), data);
+  });
+}
+
+var exampleData = {
+  title: "Hello, world!",
+  post: {
+    text: "This is a post. Hi there!",
+    date: "today"
+  },
+  comments: [{
+    name: "Jane",
+    text: "I enjoy this post."
+  },{
+    name: "John",
+    text: "omg me too!"
+  }]
+};
+
+var exampleMapping = {
+  h1: helpers.text("title"),
+  // TODO - convert a.b.c to some helper?
+  p: helpers.text("post.text"),
+  ol: helpers.each("comments", {
+    ".comment": {
+      "> span": helpers.text("@index"),
+      "> h4 > span": helpers.text("name"),
+      "> p": helpers.text("text")
+    }
+  })
+};
+
+var exampleHtml = ''+
+      '<h1></h1>'+
+      '<p></p>'+
+      '<ol>'+
+      '  <li class=comment>'+
+      '    <span></span>'+
+      '    <h4>@<span></span></h4>'+
+      '    <p></p>'+
+      '</ol>'+
+      '';
+
 module.exports = {
-  render: render
+  compile: compile
 };
