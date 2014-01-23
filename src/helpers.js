@@ -23,14 +23,14 @@ function inner(key, escape) {
 
 function each(key, mapping) {
   return function(el, data) {
-    var div = $("<div>");
-    div.append(el.children());
+    var tmpl = el.children();
+    tmpl.remove();
     _.forEach(data[key], function(subData, subKey) {
-      var frag = document.createDocumentFragment();
-      $(frag).append(div.clone().children());
-      doitlive.render(frag, mapping, _.extend({
-        "dil-each-index": subKey,
-        "dil-each-key": subKey
+      var newChild = tmpl.clone();
+      newChild.appendTo(el);
+      doitlive.compile(newChild, mapping)(_.extend({
+        "@index": subKey,
+        "@key": subKey
       }, subData));
     });
   };
